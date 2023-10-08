@@ -66,7 +66,8 @@ def search():
         with open("data.json", "r") as search_file:
             search_data = json.load(search_file)
             search_site = search_data[search_key]
-            messagebox.showinfo(title=search_key, message=f"Email: {search_site['email']}\nPassword: {search_site['password']}")
+            messagebox.showinfo(title=search_key,
+                                message=f"Email: {search_site['email']}\nPassword: {search_site['password']}")
     except FileNotFoundError:
         messagebox.showinfo(title="Warning!", message="No Data Found!")
         add()
