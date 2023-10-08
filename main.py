@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 import random
 import pyperclip
+import json
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 password = ""
@@ -30,21 +31,47 @@ def add():
     email = email_field.get()
     website = website_field.get()
     password = password_field.get()
+    new_data = {
+        website: {
+            "email": email,
+            "password": password
+        }
+    }
 
-    check = messagebox.askokcancel(title=website,
-        message=f"These are the details entered: \nEmail/Username:{email}\nPassword: {password}\nIs it OK to save?")
+    if len(website) == 0 or len(password) == 0 or len(email) == 0:
+        messagebox.showinfo(title="Oops", message="Please do not leave a field empty!")
+    else:
+        try:
+            with open("data.json", "r") as data_file:
+                data = json.load(data_file)
+                data.update(new_data)
+        except FileNotFoundError:
+            with open("data.json", "w") as data_file:
+                json.dump(new_data, data_file, indent=4)
 
-    if check:
-        if email == "" or website == "" or password == "":
-            warning_label.config(text="DO NOT LEAVE A FIELD EMPTY")
         else:
-            with open("data.txt", mode="a") as data:
-                data.write(f"{website} | {email} | {password}\n")
+            with open("data.json", "w") as data_file:
+                json.dump(data, data_file, indent=4)
+
+        finally:
             email_field.delete(0, END)
             website_field.delete(0, END)
             password_field.delete(0, END)
             password = ""
-            warning_label.config(text="")
+
+
+def search():
+    search_key = website_field.get()
+    try:
+        with open("data.json", "r") as search_file:
+            search_data = json.load(search_file)
+            search_site = search_data[search_key]
+            messagebox.showinfo(title=search_key, message=f"Email: {search_site['email']}\nPassword: {search_site['password']}")
+    except FileNotFoundError:
+        messagebox.showinfo(title="Warning!", message="No Data Found!")
+        add()
+    except KeyError:
+        messagebox.showinfo(title="Warning!", message="No Data Found!")
 
 # ---------------------------- UI SETUP ------------------------------- #
 
@@ -59,7 +86,7 @@ logo_label.place(x=190, y=80)
 
 website_label = Label(text="Website:", font=("Ubuntu", 18), fg="Grey")
 website_label.place(x=110, y=278)
-website_field = Entry(width=35)
+website_field = Entry(width=16)
 website_field.place(x=190, y=280)
 website_field.focus()
 
@@ -80,6 +107,10 @@ warning_label.place(x=190, y=450)
 generate_button = Button(text="Generate Password", font=("Ubuntu", 14), bg="Grey", fg="Black",
                          highlightthickness=1, command=generator)
 generate_button.place(x=360, y=359)
+
+search_button = Button(text="Search", font=("Ubuntu", 14), width=15, bg="Grey",
+                       fg="Black", highlightthickness=1, command=search)
+search_button.place(x=360, y=277)
 
 add_button = Button(text="Add", font=("Ubuntu", 14),
                     bg="Grey", fg="Black", highlightthickness=1, width=36, command=add)
